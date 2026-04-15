@@ -1,5 +1,0 @@
-- Artikel (artikel): verkaeufer[applookup/select], kategorie[applookup/select], titel[string/text], beschreibung[string/textarea], zustand[lookup/select], preis[number], fotos[file]
-  → verkaeufer links to app_id 69b1d00d22d9675ff59867b0
-  → kategorie links to app_id 69b1d0099533f06ff2209934
-- Kategorien (kategorien): kategoriename[string/text]
-- Verkäufer (verkaeufer): vorname[string/text], nachname[string/text], email[string/email], telefon[string/tel], zusatzinfo[string/textarea]
