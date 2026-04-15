@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { IconRefresh, IconHistory, IconLoader, IconChevronDown, IconCheck, IconClock, IconArrowBackUp } from '@tabler/icons-react';
+import { IconRefresh, IconHistory, IconLoader, IconChevronDown, IconCheck, IconClock, IconArrowBackUp, IconSparkles, IconMessageCircle } from '@tabler/icons-react';
 
 const APPGROUP_ID = '69b1d01ad8c1e47a56e80dbf';
 const UPDATE_ENDPOINT = '/claude/build/update';
@@ -38,9 +38,23 @@ interface Release {
   version: string;
   commit: string;
   deployed_at: string;
+  source?: string;
 }
 
 type Status = 'idle' | 'loading' | 'updating' | 'rolling_back' | 'error';
+
+function releaseMeta(source: string | undefined): { icon: typeof IconArrowBackUp; colorClass: string; bgClass: string; label: string } {
+  switch (source) {
+    case 'initial':
+      return { icon: IconSparkles, colorClass: 'text-blue-500', bgClass: 'bg-blue-500/5', label: 'Erstversion' };
+    case 'update':
+      return { icon: IconRefresh, colorClass: 'text-emerald-500', bgClass: 'bg-emerald-500/5', label: 'Scaffold-Update' };
+    case 'agent':
+      return { icon: IconMessageCircle, colorClass: 'text-violet-500', bgClass: 'bg-violet-500/5', label: 'KI-Änderung' };
+    default:
+      return { icon: IconArrowBackUp, colorClass: 'text-muted-foreground', bgClass: '', label: '' };
+  }
+}
 
 export function VersionCheck() {
   const [status, setStatus] = useState<Status>('loading');
@@ -227,23 +241,31 @@ export function VersionCheck() {
               Keine früheren Versionen
             </div>
           ) : (
-            <div className="max-h-48 overflow-y-auto">
-              {releases.map((rel) => (
-                <button
-                  key={rel.timestamp}
-                  onClick={() => handleRollback(rel.timestamp)}
-                  disabled={rollbackTarget === rel.timestamp}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs hover:bg-sidebar-accent/30 transition-colors disabled:opacity-50 border-b border-sidebar-border last:border-b-0"
-                >
-                  <IconArrowBackUp size={13} className="shrink-0 text-muted-foreground" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-foreground font-medium">{formatTimestamp(rel.timestamp)}</span>
-                      {rel.version && <span className="text-muted-foreground/60">v{rel.version}</span>}
+            <div className="max-h-60 overflow-y-auto">
+              {releases.map((rel) => {
+                const meta = releaseMeta(rel.source);
+                const Icon = meta.icon;
+                return (
+                  <button
+                    key={rel.timestamp}
+                    onClick={() => handleRollback(rel.timestamp)}
+                    disabled={rollbackTarget === rel.timestamp}
+                    className={`group flex items-center gap-2 w-full px-3 py-2 text-left text-xs hover:bg-sidebar-accent/30 transition-colors disabled:opacity-50 border-b border-sidebar-border last:border-b-0 ${meta.bgClass}`}
+                  >
+                    <Icon size={14} className={`shrink-0 ${meta.colorClass} group-hover:hidden`} />
+                    <IconArrowBackUp size={14} className="shrink-0 text-muted-foreground hidden group-hover:block" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-foreground font-medium">{formatTimestamp(rel.timestamp)}</span>
+                        {rel.version && <span className="text-muted-foreground/60">v{rel.version}</span>}
+                      </div>
+                      {meta.label && (
+                        <div className={`text-[10px] ${meta.colorClass} mt-0.5`}>{meta.label}</div>
+                      )}
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
